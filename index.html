@@ -3,35 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>AI STUDIO</title>
+    <title>NEO CHAT</title>
     <style>
         :root {
-            --bg: #050505;
-            --surface: #121212;
-            --border: #222222;
-            --accent: #ffffff;
-            --text-dim: #999;
-            --safe-top: env(safe-area-inset-top);
+            --bg: #000000;
+            --card: #111111;
+            --border: #222;
+            --accent: #3b82f6;
+            --text: #ffffff;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, system-ui, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         
         body { 
             background: var(--bg); 
-            color: #fff; 
-            height: 100vh; 
+            color: var(--text); 
+            height: 100dvh; 
             display: flex; 
             flex-direction: column; 
-            overflow: hidden; /* Prevents body bounce on mobile */
+            overflow: hidden; 
+            position: fixed; /* Prevents background bouncing */
+            width: 100%;
         }
 
-        /* --- Header: Fixed & Non-Moving --- */
+        /* --- Modern Top Bar --- */
         header {
-            position: fixed;
-            top: 0; width: 100%;
-            padding: calc(15px + var(--safe-top)) 20px 15px;
-            background: rgba(5, 5, 5, 0.8);
-            backdrop-filter: blur(20px);
+            padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: saturate(180%) blur(20px);
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
@@ -39,251 +38,174 @@
             z-index: 100;
         }
 
-        .status { font-size: 12px; font-weight: 600; letter-spacing: 1px; color: var(--text-dim); }
-        .menu-icon { cursor: pointer; font-size: 20px; }
+        .logo { font-weight: 700; font-size: 17px; letter-spacing: -0.5px; }
+        .model-tag { font-size: 10px; background: var(--border); padding: 4px 8px; border-radius: 6px; color: #888; text-transform: uppercase; }
 
-        /* --- Chat Scroll Area --- */
-        #chat-flow {
+        /* --- Scrollable Chat Area --- */
+        #chat-window {
             flex: 1;
             overflow-y: auto;
-            padding: 100px 20px 150px; /* Space for fixed header/footer */
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 20px;
             -webkit-overflow-scrolling: touch;
+            padding-bottom: 120px; /* Space for input */
         }
 
-        .msg-container { max-width: 90%; }
-        .msg-container.user { align-self: flex-end; }
-        
-        .bubble {
-            padding: 12px 16px;
-            border-radius: 18px;
-            font-size: 15px;
-            line-height: 1.5;
-            word-wrap: break-word;
-        }
-        
-        .user .bubble { background: #222; border-bottom-right-radius: 4px; }
-        .ai .bubble { color: #ccc; padding-left: 0; }
+        .bubble { max-width: 85%; font-size: 15px; line-height: 1.45; }
+        .user { align-self: flex-end; background: var(--accent); padding: 10px 16px; border-radius: 18px 18px 2px 18px; color: white; }
+        .ai { align-self: flex-start; color: #e0e0e0; }
         .ai img { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border); }
 
-        /* --- Bottom Input: Locked to bottom --- */
-        .input-area {
-            position: fixed;
+        /* --- Fixed Bottom Input --- */
+        .input-box {
+            position: absolute;
             bottom: 0; width: 100%;
-            padding: 15px 15px calc(20px + env(safe-area-inset-bottom));
-            background: linear-gradient(to top, var(--bg) 80%, transparent);
-            z-index: 100;
+            padding: 10px 15px calc(15px + env(safe-area-inset-bottom));
+            background: linear-gradient(to top, #000 70%, transparent);
         }
 
-        .input-card {
-            background: var(--surface);
+        .inner-input {
+            background: var(--card);
             border: 1px solid var(--border);
             border-radius: 24px;
-            padding: 8px 16px;
             display: flex;
-            flex-direction: column;
-            gap: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            align-items: flex-end;
+            padding: 8px 14px;
+            gap: 10px;
         }
 
-        .tools { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
-        .tools::-webkit-scrollbar { display: none; }
-        
-        .tool-chip {
-            background: #1d1d1d;
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            padding: 6px 12px;
-            border-radius: 100px;
-            font-size: 11px;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-        .tool-chip.active { background: #fff; color: #000; border-color: #fff; }
-
-        .input-row { display: flex; align-items: center; gap: 10px; }
         textarea {
-            flex: 1; background: none; border: none; color: #fff;
+            flex: 1; background: none; border: none; color: white;
             font-size: 16px; outline: none; resize: none;
-            max-height: 120px; padding: 8px 0;
+            max-height: 150px; padding: 8px 0; line-height: 20px;
         }
 
-        .send-btn {
+        .circle-btn {
             background: #fff; color: #000; width: 32px; height: 32px;
-            border-radius: 50%; border: none; font-weight: bold; cursor: pointer;
+            border-radius: 50%; border: none; font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 2px; flex-shrink: 0;
         }
 
-        /* --- Modal --- */
-        .modal {
+        /* --- Settings Overlay --- */
+        .overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.9);
-            display: none; align-items: center; justify-content: center; z-index: 1000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 200; padding: 30px;
         }
-        .modal.open { display: flex; }
-        .modal-inner { width: 85%; max-width: 350px; background: var(--surface); padding: 25px; border-radius: 20px; text-align: center; }
-        input[type="text"] { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border); border-radius: 10px; color: #fff; margin: 15px 0; }
-
+        .overlay.active { display: flex; }
+        .card { width: 100%; max-width: 340px; }
+        input { width: 100%; padding: 14px; background: #222; border: 1px solid #333; border-radius: 12px; color: #fff; margin: 10px 0; outline: none; }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="status" id="model-name">FETCHING...</div>
-    <div class="menu-icon" id="settings-trigger">⚙️</div>
+    <div class="logo" id="open-settings">NEO ⚙️</div>
+    <div class="model-tag" id="current-model">GPT-5.3</div>
 </header>
 
-<div id="chat-flow">
-    <div class="msg-container ai">
-        <div class="bubble">Ready for your prompt. Select a mode below to start.</div>
+<div id="chat-window">
+    <div class="bubble ai">Ready. Note: If requests fail, the API's CORS policy may be blocking your browser.</div>
+</div>
+
+<div class="input-box">
+    <div class="inner-input">
+        <textarea id="main-input" placeholder="Message..." rows="1"></textarea>
+        <button class="circle-btn" id="send-btn">↑</button>
     </div>
 </div>
 
-<div class="input-area">
-    <div class="input-card">
-        <div class="tools">
-            <div class="tool-chip active" id="mode-chat">Chat</div>
-            <div class="tool-chip" id="mode-img">Image Gen</div>
-            <div class="tool-chip" id="mode-logo">Logo Design</div>
-        </div>
-        <div class="input-row">
-            <textarea id="prompt-in" placeholder="Ask anything..." rows="1"></textarea>
-            <button class="send-btn" id="send-trigger">→</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="settings-modal">
-    <div class="modal-inner">
-        <h3>API Key</h3>
-        <input type="text" id="api-key-input" placeholder="Paste Token Here">
-        <button onclick="saveKey()" style="width:100%; padding:12px; border-radius:10px; background:#fff; border:none; font-weight:bold;">Save & Connect</button>
+<div class="overlay" id="settings-overlay">
+    <div class="card">
+        <h2>Settings</h2>
+        <p style="color: #666; font-size: 13px;">API Token</p>
+        <input type="password" id="token-field" placeholder="Paste Token...">
+        <button onclick="save()" style="width:100%; padding:14px; border-radius:12px; background:#fff; font-weight:bold; border:none;">Connect</button>
     </div>
 </div>
 
 <script>
-    let API_TOKEN = localStorage.getItem('ai_token') || '';
-    let currentMode = 'chat';
-    let models = [];
-    let selectedModel = 'gpt_5_3';
+    let TOKEN = localStorage.getItem('ai_token') || '';
+    const chatWindow = document.getElementById('chat-window');
+    const mainInput = document.getElementById('main-input');
+    const overlay = document.getElementById('settings-overlay');
 
-    // --- Core Logic ---
-    async function apiRequest(endpoint, body) {
-        const url = `https://bot.insta-acc-sec.workers.dev/api/v1/${endpoint}`;
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${API_TOKEN}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-        });
-        if(!res.ok) throw new Error('API Error');
-        return res.json();
-    }
-
-    async function fetchModels() {
-        if(!API_TOKEN) return;
-        try {
-            const res = await fetch('https://bot.insta-acc-sec.workers.dev/api/models', {
-                headers: { 'Authorization': `Bearer ${API_TOKEN}` }
-            });
-            const data = await res.json();
-            models = data.models || [];
-            selectedModel = models[0] || 'gpt_5_3';
-            document.getElementById('model-name').innerText = selectedModel.toUpperCase();
-        } catch(e) {
-            document.getElementById('model-name').innerText = "ERROR LOADING";
-        }
-    }
-
-    // --- UI Logic ---
-    const chatFlow = document.getElementById('chat-flow');
-    const promptIn = document.getElementById('prompt-in');
-    const modal = document.getElementById('settings-modal');
-
-    function appendMsg(text, type, isImg = false) {
-        const div = document.createElement('div');
-        div.className = `msg-container ${type}`;
-        div.innerHTML = `<div class="bubble">${isImg ? `<img src="${text}">` : text}</div>`;
-        chatFlow.appendChild(div);
-        chatFlow.scrollTop = chatFlow.scrollHeight;
-    }
-
-    async function handleSend() {
-        const val = promptIn.value.trim();
-        if(!val || !API_TOKEN) return;
-
-        appendMsg(val, 'user');
-        promptIn.value = '';
-        promptIn.style.height = 'auto';
-
-        try {
-            if(currentMode === 'chat') {
-                const data = await apiRequest('chat', {
-                    message: val,
-                    model: selectedModel,
-                    systemPrompt: "You are a helpful assistant."
-                });
-                appendMsg(data.message || data.response, 'ai');
-            } else if(currentMode === 'img') {
-                const data = await apiRequest('image/generate', {
-                    prompt: val,
-                    style: "High GPT4o",
-                    imagesNum: 1
-                });
-                appendMsg(data.image_url, 'ai', true);
-            } else if(currentMode === 'logo') {
-                const data = await apiRequest('image/logo', {
-                    prompt: val,
-                    style: "Minimalistic Logo",
-                    imagesNum: 1
-                });
-                appendMsg(data.image_url, 'ai', true);
-            }
-        } catch(e) {
-            appendMsg("Failed to load. Check API Key or endpoint status.", 'ai');
-        }
-    }
-
-    // --- Event Listeners ---
-    document.getElementById('settings-trigger').onclick = () => modal.classList.add('open');
-    
-    function saveKey() {
-        API_TOKEN = document.getElementById('api-key-input').value.trim();
-        localStorage.setItem('ai_token', API_TOKEN);
-        modal.classList.remove('open');
-        fetchModels();
-    }
-
-    function setMode(mode, id) {
-        currentMode = mode;
-        document.querySelectorAll('.tool-chip').forEach(c => c.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        promptIn.placeholder = mode === 'chat' ? "Ask anything..." : "Describe image...";
-    }
-
-    document.getElementById('mode-chat').onclick = () => setMode('chat', 'mode-chat');
-    document.getElementById('mode-img').onclick = () => setMode('img', 'mode-img');
-    document.getElementById('mode-logo').onclick = () => setMode('logo', 'mode-logo');
-
-    document.getElementById('send-trigger').onclick = handleSend;
-    promptIn.oninput = function() {
-        this.style.height = 'auto';
-        this.style.height = this.scrollHeight + 'px';
+    // --- Helpers ---
+    const save = () => {
+        TOKEN = document.getElementById('token-field').value.trim();
+        localStorage.setItem('ai_token', TOKEN);
+        overlay.classList.remove('active');
     };
 
-    // Prevent zoom/keyboard scroll issues on iOS
-    promptIn.addEventListener('focus', () => {
-        setTimeout(() => {
-            window.scrollTo(0, 0);
-            document.body.scrollTop = 0;
-        }, 50);
-    });
+    document.getElementById('open-settings').onclick = () => {
+        document.getElementById('token-field').value = TOKEN;
+        overlay.classList.add('active');
+    };
 
-    if(!API_TOKEN) modal.classList.add('open');
-    else fetchModels();
+    function log(msg, type = 'ai', isImg = false) {
+        const div = document.createElement('div');
+        div.className = `bubble ${type}`;
+        div.innerHTML = isImg ? `<img src="${msg}">` : msg;
+        chatWindow.appendChild(div);
+        chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
+    }
 
+    // --- API Call ---
+    async function talk() {
+        const text = mainInput.value.trim();
+        if(!text || !TOKEN) return;
+
+        log(text, 'user');
+        mainInput.value = '';
+        mainInput.style.height = 'auto';
+
+        try {
+            const res = await fetch('https://bot.insta-acc-sec.workers.dev/api/v1/chat', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: text,
+                    model: "gpt_5_3",
+                    systemPrompt: "You are a helpful assistant."
+                })
+            });
+
+            if(!res.ok) {
+                if(res.status === 0) throw new Error("CORS Blocked: The API only allows specific domains.");
+                throw new Error(`HTTP ${res.status}`);
+            }
+
+            const data = await res.json();
+            // Matching the JSON key from your iSH test: "response"
+            log(data.response || data.message || "Empty response.");
+            
+        } catch(e) {
+            log(`<span style="color:#ff4444;">Error: ${e.message}</span>`);
+        }
+    }
+
+    // --- UI Fixes ---
+    document.getElementById('send-btn').onclick = talk;
+
+    mainInput.oninput = function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+    };
+
+    // Keep Top Bar fixed when keyboard opens
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+            document.body.style.height = window.visualViewport.height + 'px';
+        });
+    }
+
+    if(!TOKEN) overlay.classList.add('active');
 </script>
 </body>
 </html>
