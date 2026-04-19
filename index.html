@@ -14,7 +14,15 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    position: fixed; /* This is the key for iOS */
+}
+
+
+
         body { 
             background: var(--bg); 
             color: var(--text); 
@@ -154,41 +162,32 @@
     }
 
     // --- API Call ---
-    async function talk() {
-        const text = mainInput.value.trim();
-        if(!text || !TOKEN) return;
+    
+async function talk() {
+    const text = mainInput.value.trim();
+    if(!text || !TOKEN) return;
 
-        log(text, 'user');
-        mainInput.value = '';
-        mainInput.style.height = 'auto';
+    log(text, 'user');
+    mainInput.value = '';
 
-        try {
-            const res = await fetch('https://bot.insta-acc-sec.workers.dev/api/v1/chat', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${TOKEN}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: text,
-                    model: "gpt_5_3",
-                    systemPrompt: "You are a helpful assistant."
-                })
-            });
+    try {
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: text,
+                model: "gpt_5_3",
+                token: TOKEN // Pass the token to our proxy
+            })
+        });
 
-            if(!res.ok) {
-                if(res.status === 0) throw new Error("CORS Blocked: The API only allows specific domains.");
-                throw new Error(`HTTP ${res.status}`);
-            }
-
-            const data = await res.json();
-            // Matching the JSON key from your iSH test: "response"
-            log(data.response || data.message || "Empty response.");
-            
-        } catch(e) {
-            log(`<span style="color:#ff4444;">Error: ${e.message}</span>`);
-        }
+        const data = await res.json();
+        log(data.response || data.message || "No response.");
+        
+    } catch(e) {
+        log(`<span style="color:#ff4444;">Server Error: ${e.message}</span>`);
     }
+}
 
     // --- UI Fixes ---
     document.getElementById('send-btn').onclick = talk;
