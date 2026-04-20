@@ -228,7 +228,7 @@
             list.innerHTML = data.models.map(m => `<option value="${m}">${m}</option>`).join('');
         } catch (e) { console.error("Models failed"); }
     }
-
+    
     async function send() {
     const input = document.getElementById('msg-in');
     const text = input.value.trim();
@@ -240,7 +240,7 @@
     input.value = '';
     input.style.height = 'auto';
 
-    // Create an empty AI bubble to fill up
+    // Create the AI bubble
     const aiMsgDiv = document.createElement('div');
     aiMsgDiv.className = 'msg ai';
     document.getElementById('chat-window').appendChild(aiMsgDiv);
@@ -265,29 +265,46 @@
             return;
         }
 
-        // --- STREAMING LOGIC ---
+        // --- ENHANCED STREAMING PARSER ---
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
-        let fullText = "";
+        let buffer = ""; 
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
             
-            const chunk = decoder.decode(value, { stream: true });
-            
-            // Note: Depending on your worker output, you might need to 
-            // parse "data: {...}" strings. If it's raw text, this works:
-            fullText += chunk;
-            aiMsgDiv.innerText = fullText; 
+            // Append new chunk to buffer
+            buffer += decoder.decode(value, { stream: true });
 
-            // Keep scrolling as it types
+            // Look for the "response" value in the JSON string
+            // This regex finds the content between "response":" and the next "
+            try {
+                // If the worker sends full JSON objects per chunk:
+                if (buffer.includes('"response":"')) {
+                    const parts = buffer.split('"response":"');
+                    if (parts.length > 1) {
+                        let content = parts[1].split('","')[0]; // Get the response text
+                        content = content.split('"}')[0]; // Clean up ending
+                        
+                        // Handle escaped characters like \n or \"
+                        aiMsgDiv.innerText = content.replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                    }
+                } else {
+                    // Fallback: if it's raw text
+                    aiMsgDiv.innerText = buffer;
+                }
+            } catch (e) {
+                // If it's not valid JSON yet, wait for the next chunk
+                continue;
+            }
+
             const win = document.getElementById('chat-window');
             win.scrollTo({ top: win.scrollHeight });
         }
         
     } catch (e) {
-        aiMsgDiv.innerHTML = `<span style="color:#ff4444;">Connection Lost</span>`;
+        aiMsgDiv.innerHTML = `<span style="color:#ff4444;">Neo lost connection.</span>`;
     }
 }
 
