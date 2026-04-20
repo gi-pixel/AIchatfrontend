@@ -1,343 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NEO LUXE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #050505;
-            --surface: #0f0f0f;
-            --border: #1a1a1a;
-            --neon: #a855f7; /* Luxury Neon Purple */
-            --neon-glow: rgba(168, 85, 247, 0.4);
-            --text-main: #f8fafc;
-            --text-dim: #64748b;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neo</title>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-        html, body { 
-            height: 100%; width: 100%; background: var(--bg); color: var(--text-main); 
-            overflow: hidden; position: fixed; 
-        }
+<style>
+:root{
+  --bg:#0b0f0c;
+  --surface:#111714;
+  --border:#1f2a24;
+  --accent:#00ff9c;
+  --text:#e6f1ec;
+  --muted:#7d8f86;
+}
 
-        /* --- Onboarding --- */
-        #onboarding {
-            position: fixed; inset: 0; background: var(--bg); z-index: 1000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 30px; transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .step { display: none; width: 100%; max-width: 320px; text-align: center; }
-        .step.active { display: block; }
-        .lux-input {
-            width: 100%; background: var(--surface); border: 1px solid var(--border);
-            padding: 14px; border-radius: 12px; color: #fff; margin: 15px 0;
-            outline: none; font-size: 14px; text-align: center;
-        }
-        .lux-input:focus { border-color: var(--neon); box-shadow: 0 0 15px var(--neon-glow); }
-        .lux-btn {
-            width: 100%; padding: 14px; border-radius: 12px; border: none;
-            background: var(--neon); color: #fff; font-weight: 600; cursor: pointer;
-        }
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Inter',sans-serif;
+}
 
-        /* --- Layout --- */
-        #app-wrapper { height: 100dvh; display: flex; flex-direction: column; width: 100%; }
+body{
+  background:var(--bg);
+  color:var(--text);
+}
 
-        header {
-            padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border); background: rgba(5,5,5,0.8); backdrop-filter: blur(20px);
-            z-index: 100;
-        }
-        .logo { 
-            font-weight: 600; font-size: 18px; color: var(--neon); 
-            text-shadow: 0 0 10px var(--neon-glow); letter-spacing: 1px; 
-        }
+/* LOGIN */
+#onboarding{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:var(--bg);
+  z-index:999;
+  padding:20px;
+}
 
-        #chat-window {
-            flex: 1; overflow-y: auto; padding: 20px;
-            display: flex; flex-direction: column; gap: 20px;
-            -webkit-overflow-scrolling: touch;
-        }
+.auth{
+  width:100%;
+  max-width:380px;
+}
 
-        /* --- Welcome Splash --- */
-        #welcome-splash {
-            margin: auto; text-align: center; max-width: 280px; padding-bottom: 50px;
-        }
-        #welcome-splash h1 { font-size: 24px; font-weight: 500; margin-bottom: 8px; }
-        #welcome-splash p { color: var(--text-dim); font-size: 14px; }
+.logo{
+  text-align:center;
+  font-size:42px;
+  font-weight:700;
+  margin-bottom:30px;
+}
+.logo span{ color:var(--muted); }
 
-        /* --- Messages --- */
-        .msg { max-width: 85%; font-size: 15px; line-height: 1.6;
-    white-space: pre-wrap; /* Preserves the line breaks from the AI */
-    word-break: break-word;
+.title{
+  font-size:34px;
+  font-weight:700;
+  text-align:center;
+}
 
-        }
+.subtitle{
+  text-align:center;
+  color:var(--muted);
+  margin:10px 0 30px;
+}
 
-        .msg.user { align-self: flex-end; color: var(--neon); font-weight: 500; }
-        .msg.ai { align-self: flex-start; color: #cbd5e1; }
-        .msg.ai img { width: 100%; border-radius: 16px; margin-top: 10px; border: 1px solid var(--border); }
+.input{
+  width:100%;
+  padding:16px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:white;
+  margin-bottom:16px;
+}
 
-        /* --- Footer & Keyboard Fix --- */
-        footer {
-            padding: 10px 15px calc(15px + env(safe-area-inset-bottom));
-            background: linear-gradient(to top, var(--bg) 80%, transparent);
-        }
-        .input-pill {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 24px; padding: 6px 6px 6px 16px;
-            display: flex; flex-direction: column; gap: 8px;
-        }
-        .tools-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
-        .tools-row::-webkit-scrollbar { display: none; }
-        .tool { 
-            font-size: 11px; padding: 5px 12px; border-radius: 20px; 
-            border: 1px solid var(--border); color: var(--text-dim); cursor: pointer;
-        }
-        .tool.active { border-color: var(--neon); color: var(--neon); background: rgba(168,85,247,0.1); }
-        
-        .type-row { display: flex; align-items: center; gap: 10px; }
-        textarea {
-            flex: 1; background: none; border: none; color: #fff;
-            font-size: 16px; outline: none; resize: none; max-height: 120px; padding: 6px 0;
-        }
-        .send-btn {
-            background: var(--neon); color: #fff; width: 34px; height: 34px;
-            border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 10px var(--neon-glow);
-        }
+.btn{
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:14px;
+  background:#0f0f0f;
+  color:white;
+  font-weight:600;
+  font-size:18px;
+}
 
-        /* --- Sidebar --- */
-        #sidebar {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 500;
-            display: none; justify-content: flex-end;
-        }
-        #sidebar.open { display: flex; }
-        .side-card {
-            width: 80%; background: var(--surface); padding: 30px 20px;
-            border-left: 1px solid var(--border); animation: slideIn 0.3s ease;
-        }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-    </style>
+/* APP */
+#app{
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+}
+
+header{
+  display:flex;
+  justify-content:space-between;
+  padding:14px;
+  border-bottom:1px solid var(--border);
+}
+
+#chat{
+  flex:1;
+  overflow-y:auto;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* ChatGPT-like bubbles */
+.msg{
+  max-width:85%;
+  padding:14px 16px;
+  border-radius:18px;
+  line-height:1.6;
+  white-space:pre-wrap;
+  font-size:15px;
+}
+
+.user{
+  align-self:flex-end;
+  background:var(--accent);
+  color:#001b12;
+  font-weight:500;
+}
+
+.ai{
+  align-self:flex-start;
+  background:var(--surface);
+  border:1px solid var(--border);
+}
+
+/* footer */
+footer{
+  padding:12px;
+  border-top:1px solid var(--border);
+}
+
+.input-wrap{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+textarea{
+  flex:1;
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:white;
+  border-radius:14px;
+  padding:14px;
+  resize:none;
+  outline:none;
+}
+
+.send{
+  background:var(--accent);
+  border:none;
+  width:48px;
+  height:48px;
+  border-radius:14px;
+  font-size:18px;
+}
+
+select{
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:white;
+  padding:6px;
+  border-radius:8px;
+}
+</style>
 </head>
+
 <body>
 
+<!-- LOGIN -->
 <div id="onboarding">
-    <div class="step active" id="s1">
-        <h2 style="margin-bottom: 10px;">Identity</h2>
-        <input type="text" id="name-in" class="lux-input" placeholder="Enter Name">
-        <button class="lux-btn" onclick="go(2)">Next</button>
-    </div>
-    <div class="step" id="s2">
-        <h2 style="margin-bottom: 10px;">Access</h2>
-        <input type="password" id="token-in" class="lux-input" placeholder="API Token">
-        <button class="lux-btn" onclick="finish()">Connect NEO</button>
-    </div>
+  <div class="auth">
+    <div class="logo">Neo<span>Smith</span></div>
+    <div class="title">Welcome back</div>
+    <div class="subtitle">Enter your credentials to continue</div>
+
+    <input id="token" class="input" type="password" placeholder="API Token">
+    <button class="btn" onclick="login()">Continue</button>
+  </div>
 </div>
 
-<div id="app-wrapper">
-    <header>
-        <div class="logo">NEO</div>
-        <div style="display: flex; gap: 12px; align-items: center;">
-            <select id="model-list" style="background:none; border:1px solid var(--border); color:var(--text-dim); font-size:10px; border-radius:8px; padding:4px;"></select>
-            <div onclick="toggleSide(true)" style="font-size: 20px;">⚙️</div>
-        </div>
-    </header>
+<!-- APP -->
+<div id="app">
+  <header>
+    <div>Neo</div>
+    <select id="models"></select>
+  </header>
 
-    <main id="chat-window">
-        <div id="welcome-splash">
-            <h1 id="greet-name">Hello.</h1>
-            <p>Welcome to Neo. Choose a tool below to begin your luxury AI experience.</p>
-        </div>
-    </main>
+  <main id="chat"></main>
 
-    <footer>
-        <div class="input-pill">
-            <div class="tools-row">
-                <div class="tool active" id="t-chat" onclick="setMode('chat')">Chat</div>
-                <div class="tool" id="t-img" onclick="setMode('image/generate')">Photos</div>
-                <div class="tool" id="t-logo" onclick="setMode('image/logo')">Logos</div>
-            </div>
-            <div class="type-row">
-                <textarea id="msg-in" placeholder="Message..." rows="1"></textarea>
-                <button class="send-btn" id="send-btn">↑</button>
-            </div>
-        </div>
-    </footer>
-</div>
-
-<div id="sidebar" onclick="toggleSide(false)">
-    <div class="side-card" onclick="event.stopPropagation()">
-        <h3 style="margin-bottom: 20px;">AI Personality</h3>
-        <textarea id="personality-in" class="lux-input" style="text-align:left; height:200px;" placeholder="Describe how NEO should behave..."></textarea>
-        <button class="lux-btn" onclick="saveP()">Save Settings</button>
-        <button onclick="localStorage.clear(); location.reload();" style="background:none; border:none; color:red; margin-top:20px; font-size:12px; width:100%;">Reset App</button>
+  <footer>
+    <div class="input-wrap">
+      <textarea id="msg" rows="1" placeholder="Message..."></textarea>
+      <button class="send" onclick="send()">↑</button>
     </div>
+  </footer>
 </div>
 
 <script>
-    let NAME = localStorage.getItem('neo_user');
-    let TOKEN = localStorage.getItem('neo_key');
-    let PERSONALITY = localStorage.getItem('neo_p') || "You are an elite, concise AI.";
-    let currentMode = 'chat';
+let TOKEN = localStorage.getItem('neo_key');
 
-    // --- Boot ---
-    if (!NAME || !TOKEN) {
-        document.getElementById('onboarding').style.display = 'flex';
-    } else { start(); }
-
-    function go(s) {
-        document.getElementById('s1').classList.remove('active');
-        document.getElementById('s2').classList.add('active');
-    }
-
-    function finish() {
-        NAME = document.getElementById('name-in').value;
-        TOKEN = document.getElementById('token-in').value;
-        localStorage.setItem('neo_user', NAME);
-        localStorage.setItem('neo_key', TOKEN);
-        start();
-    }
-
-    function start() {
-        document.getElementById('onboarding').style.transform = 'translateY(-100%)';
-        document.getElementById('greet-name').innerText = `Hello, ${NAME}.`;
-        document.getElementById('personality-in').value = PERSONALITY;
-        fetchModels();
-    }
-
-    // --- Controls ---
-    function toggleSide(o) { document.getElementById('sidebar').classList.toggle('open', o); }
-    function saveP() { 
-        PERSONALITY = document.getElementById('personality-in').value; 
-        localStorage.setItem('neo_p', PERSONALITY);
-        toggleSide(false);
-    }
-    function setMode(m) {
-        currentMode = m;
-        document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
-        const id = m === 'chat' ? 't-chat' : (m.includes('logo') ? 't-logo' : 't-img');
-        document.getElementById(id).classList.add('active');
-    }
-
-    // --- API ---
-    async function fetchModels() {
-        try {
-            const res = await fetch('/api/chat', { // hitting the proxy GET
-                headers: { 'Authorization': `Bearer ${TOKEN}` }
-            });
-            const data = await res.json();
-            const list = document.getElementById('model-list');
-            list.innerHTML = data.models.map(m => `<option value="${m}">${m}</option>`).join('');
-        } catch (e) { console.error("Models failed"); }
-    }
-    
-    async function send() {
-    const input = document.getElementById('msg-in');
-    const text = input.value.trim();
-    if(!text || !TOKEN) return;
-
-    if(document.getElementById('welcome-splash')) document.getElementById('welcome-splash').remove();
-
-    addMsg(text, 'user');
-    input.value = '';
-    input.style.height = 'auto';
-
-    // Create the AI bubble
-    const aiMsgDiv = document.createElement('div');
-    aiMsgDiv.className = 'msg ai';
-    document.getElementById('chat-window').appendChild(aiMsgDiv);
-
-    try {
-        const res = await fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                endpoint: currentMode,
-                message: text,
-                prompt: text,
-                token: TOKEN,
-                model: document.getElementById('model-list').value,
-                systemPrompt: PERSONALITY
-            })
-        });
-
-        if (currentMode !== 'chat') {
-            const data = await res.json();
-            aiMsgDiv.innerHTML = `<img src="${data.image_url}">`;
-            return;
-        }
-
-        // --- ENHANCED STREAMING PARSER ---
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = ""; 
-
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            
-            // Append new chunk to buffer
-            buffer += decoder.decode(value, { stream: true });
-
-            // Look for the "response" value in the JSON string
-            // This regex finds the content between "response":" and the next "
-            try {
-                // If the worker sends full JSON objects per chunk:
-                if (buffer.includes('"response":"')) {
-                    const parts = buffer.split('"response":"');
-                    if (parts.length > 1) {
-                        let content = parts[1].split('","')[0]; // Get the response text
-                        content = content.split('"}')[0]; // Clean up ending
-                        
-                        // Handle escaped characters like \n or \"
-                        aiMsgDiv.innerText = content.replace(/\\n/g, '\n').replace(/\\"/g, '"');
-                    }
-                } else {
-                    // Fallback: if it's raw text
-                    aiMsgDiv.innerText = buffer;
-                }
-            } catch (e) {
-                // If it's not valid JSON yet, wait for the next chunk
-                continue;
-            }
-
-            const win = document.getElementById('chat-window');
-            win.scrollTo({ top: win.scrollHeight });
-        }
-        
-    } catch (e) {
-        aiMsgDiv.innerHTML = `<span style="color:#ff4444;">Neo lost connection.</span>`;
-    }
+if(TOKEN){
+  document.getElementById('onboarding').style.display='none';
+  loadModels();
 }
 
-    
-    
-    function addMsg(c, r, isI = false) {
-        const win = document.getElementById('chat-window');
-        const div = document.createElement('div');
-        div.className = `msg ${r}`;
-        div.innerHTML = isI ? `<img src="${c}">` : c;
-        win.appendChild(div);
-        win.scrollTo({ top: win.scrollHeight, behavior: 'smooth' });
-    }
+function login(){
+  TOKEN=document.getElementById('token').value;
+  localStorage.setItem('neo_key',TOKEN);
+  document.getElementById('onboarding').style.display='none';
+  loadModels();
+}
 
-    // --- UI Fixes ---
-    document.getElementById('send-btn').onclick = send;
-    document.getElementById('msg-in').oninput = function() {
-        this.style.height = 'auto';
-        this.style.height = this.scrollHeight + 'px';
-    };
+/* MODEL FETCH FIX */
+async function loadModels(){
+  const res=await fetch('/api/chat',{
+    headers:{Authorization:`Bearer ${TOKEN}`}
+  });
+  const data=await res.json();
 
-    // Keyboard Viewport Fix
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', () => {
-            document.getElementById('app-wrapper').style.height = window.visualViewport.height + 'px';
-            window.scrollTo(0,0);
-        });
+  const select=document.getElementById('models');
+  select.innerHTML='';
+  data.forEach(m=>{
+    let o=document.createElement('option');
+    o.value=m;
+    o.textContent=m;
+    select.appendChild(o);
+  });
+}
+
+/* ADD MESSAGE */
+function addMsg(text,type){
+  const div=document.createElement('div');
+  div.className='msg '+type;
+  div.textContent=text;
+  document.getElementById('chat').appendChild(div);
+  div.scrollIntoView();
+  return div;
+}
+
+/* CLEAN MARKDOWN */
+function clean(text){
+  return text.replace(/[*#`_>-]/g,'');
+}
+
+/* SMOOTH STREAM (WORD-BY-WORD FEEL) */
+async function send(){
+  const input=document.getElementById('msg');
+  const text=input.value.trim();
+  if(!text) return;
+
+  addMsg(text,'user');
+  input.value='';
+
+  const bubble=addMsg('','ai');
+
+  const res=await fetch('/api/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      message:text,
+      token:TOKEN,
+      endpoint:'chat',
+      model:document.getElementById('models').value
+    })
+  });
+
+  const reader=res.body.getReader();
+  const decoder=new TextDecoder();
+
+  let full='';
+  let queue=[];
+
+  function type(){
+    if(queue.length){
+      full += queue.shift();
+      bubble.textContent = clean(full);
+      bubble.scrollIntoView();
+      setTimeout(type, 15); // typing speed
     }
+  }
+
+  while(true){
+    const {done,value}=await reader.read();
+    if(done) break;
+
+    const chunk=decoder.decode(value);
+    queue.push(...chunk.split(''));
+    if(queue.length === chunk.length) type();
+  }
+}
 </script>
+
 </body>
 </html>
