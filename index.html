@@ -70,7 +70,12 @@
         #welcome-splash p { color: var(--text-dim); font-size: 14px; }
 
         /* --- Messages --- */
-        .msg { max-width: 85%; font-size: 15px; line-height: 1.6; }
+        .msg { max-width: 85%; font-size: 15px; line-height: 1.6;
+    white-space: pre-wrap; /* Preserves the line breaks from the AI */
+    word-break: break-word;
+
+        }
+
         .msg.user { align-self: flex-end; color: var(--neon); font-weight: 500; }
         .msg.ai { align-self: flex-start; color: #cbd5e1; }
         .msg.ai img { width: 100%; border-radius: 16px; margin-top: 10px; border: 1px solid var(--border); }
