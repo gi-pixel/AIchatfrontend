@@ -230,37 +230,69 @@
     }
 
     async function send() {
-        const input = document.getElementById('msg-in');
-        const text = input.value.trim();
-        if(!text) return;
+    const input = document.getElementById('msg-in');
+    const text = input.value.trim();
+    if(!text || !TOKEN) return;
 
-        // Clear splash on first msg
-        if(document.getElementById('welcome-splash')) document.getElementById('welcome-splash').remove();
+    if(document.getElementById('welcome-splash')) document.getElementById('welcome-splash').remove();
 
-        addMsg(text, 'user');
-        input.value = '';
-        input.style.height = 'auto';
+    addMsg(text, 'user');
+    input.value = '';
+    input.style.height = 'auto';
 
-        try {
-            const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    endpoint: currentMode,
-                    message: text,
-                    prompt: text, // for images
-                    token: TOKEN,
-                    model: document.getElementById('model-list').value,
-                    systemPrompt: PERSONALITY,
-                    style: currentMode.includes('logo') ? "Minimalistic Logo" : "High GPT4o"
-                })
-            });
+    // Create an empty AI bubble to fill up
+    const aiMsgDiv = document.createElement('div');
+    aiMsgDiv.className = 'msg ai';
+    document.getElementById('chat-window').appendChild(aiMsgDiv);
+
+    try {
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                endpoint: currentMode,
+                message: text,
+                prompt: text,
+                token: TOKEN,
+                model: document.getElementById('model-list').value,
+                systemPrompt: PERSONALITY
+            })
+        });
+
+        if (currentMode !== 'chat') {
             const data = await res.json();
-            if(currentMode === 'chat') addMsg(data.response || data.message, 'ai');
-            else addMsg(data.image_url, 'ai', true);
-        } catch (e) { addMsg("System error. Check proxy.", 'ai'); }
-    }
+            aiMsgDiv.innerHTML = `<img src="${data.image_url}">`;
+            return;
+        }
 
+        // --- STREAMING LOGIC ---
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value, { stream: true });
+            
+            // Note: Depending on your worker output, you might need to 
+            // parse "data: {...}" strings. If it's raw text, this works:
+            fullText += chunk;
+            aiMsgDiv.innerText = fullText; 
+
+            // Keep scrolling as it types
+            const win = document.getElementById('chat-window');
+            win.scrollTo({ top: win.scrollHeight });
+        }
+        
+    } catch (e) {
+        aiMsgDiv.innerHTML = `<span style="color:#ff4444;">Connection Lost</span>`;
+    }
+}
+
+    
+    
     function addMsg(c, r, isI = false) {
         const win = document.getElementById('chat-window');
         const div = document.createElement('div');
