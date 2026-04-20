@@ -3,208 +3,311 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>NEO CHAT</title>
+    <title>NEO LUXE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #000000;
-            --card: #111111;
-            --border: #222;
-            --accent: #3b82f6;
-            --text: #ffffff;
+            --surface: #111111;
+            --accent: #ffffff;
+            --border: rgba(255,255,255,0.1);
+            --text-dim: #888888;
+            --gold: #d4af37; /* Luxury accent */
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-html, body {
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    position: fixed; /* This is the key for iOS */
-}
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-
-
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            height: 100dvh; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-            position: fixed; /* Prevents background bouncing */
+        body {
+            background-color: var(--bg);
+            color: #fff;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: fixed;
             width: 100%;
         }
 
-        /* --- Modern Top Bar --- */
+        /* --- Onboarding Overlay --- */
+        #onboarding {
+            position: fixed; inset: 0;
+            background: var(--bg);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .step { display: none; width: 100%; max-width: 300px; text-align: center; }
+        .step.active { display: block; animation: fadeIn 0.5s ease; }
+        
+        input.lux-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border);
+            color: #fff;
+            font-size: 1.2rem;
+            padding: 15px 0;
+            margin: 20px 0;
+            text-align: center;
+            outline: none;
+            font-weight: 300;
+        }
+        .lux-btn {
+            background: #fff; color: #000;
+            padding: 12px 40px; border-radius: 100px;
+            border: none; font-weight: 600; font-size: 14px;
+            cursor: pointer; letter-spacing: 1px;
+        }
+
+        /* --- Main Header --- */
         header {
-            padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: saturate(180%) blur(20px);
+            padding: calc(15px + env(safe-area-inset-top)) 20px 15px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(15px);
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 100;
         }
+        .welcome-text { font-size: 12px; font-weight: 300; color: var(--text-dim); }
+        .welcome-text span { color: #fff; font-weight: 600; }
 
-        .logo { font-weight: 700; font-size: 17px; letter-spacing: -0.5px; }
-        .model-tag { font-size: 10px; background: var(--border); padding: 4px 8px; border-radius: 6px; color: #888; text-transform: uppercase; }
-
-        /* --- Scrollable Chat Area --- */
-        #chat-window {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 120px; /* Space for input */
-        }
-
-        .bubble { max-width: 85%; font-size: 15px; line-height: 1.45; }
-        .user { align-self: flex-end; background: var(--accent); padding: 10px 16px; border-radius: 18px 18px 2px 18px; color: white; }
-        .ai { align-self: flex-start; color: #e0e0e0; }
-        .ai img { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--border); }
-
-        /* --- Fixed Bottom Input --- */
-        .input-box {
-            position: absolute;
-            bottom: 0; width: 100%;
-            padding: 10px 15px calc(15px + env(safe-area-inset-bottom));
-            background: linear-gradient(to top, #000 70%, transparent);
-        }
-
-        .inner-input {
-            background: var(--card);
+        .model-picker {
+            background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 24px;
-            display: flex;
-            align-items: flex-end;
-            padding: 8px 14px;
-            gap: 10px;
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 100px;
+            font-size: 11px;
+            outline: none;
         }
 
-        textarea {
-            flex: 1; background: none; border: none; color: white;
+        /* --- Side Panel (Drawer) --- */
+        #side-panel {
+            position: fixed; right: 0; top: 0; bottom: 0;
+            width: 80%; max-width: 320px;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            z-index: 500;
+            transform: translateX(100%);
+            transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            padding: 60px 25px;
+        }
+        #side-panel.open { transform: translateX(0); }
+        .panel-close { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; }
+        .panel-title { font-weight: 600; margin-bottom: 20px; letter-spacing: -0.5px; }
+        label { font-size: 10px; text-transform: uppercase; color: var(--text-dim); letter-spacing: 1px; }
+        textarea.panel-input {
+            width: 100%; background: #000; border: 1px solid var(--border);
+            border-radius: 12px; padding: 15px; color: #fff;
+            margin-top: 10px; resize: none; font-size: 14px; outline: none;
+        }
+
+        /* --- Chat Interface --- */
+        #chat-stream {
+            flex: 1; overflow-y: auto;
+            padding: 20px;
+            display: flex; flex-direction: column; gap: 30px;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 150px;
+        }
+        .msg { max-width: 85%; font-weight: 300; font-size: 15px; line-height: 1.6; }
+        .msg.user { align-self: flex-end; color: #fff; text-align: right; }
+        .msg.ai { align-self: flex-start; color: #ccc; }
+        .msg.ai img { width: 100%; border-radius: 20px; margin-top: 15px; border: 1px solid var(--border); }
+
+        /* --- Bottom Input --- */
+        .input-container {
+            position: fixed; bottom: 0; width: 100%;
+            padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+            background: linear-gradient(to top, var(--bg) 80%, transparent);
+        }
+        .pill {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 8px 10px 8px 20px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        textarea#user-msg {
+            flex: 1; background: none; border: none; color: #fff;
             font-size: 16px; outline: none; resize: none;
-            max-height: 150px; padding: 8px 0; line-height: 20px;
+            max-height: 100px; padding: 5px 0; font-weight: 300;
+        }
+        .send-icon {
+            width: 40px; height: 40px; background: #fff; color: #000;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; border: none; font-size: 18px;
         }
 
-        .circle-btn {
-            background: #fff; color: #000; width: 32px; height: 32px;
-            border-radius: 50%; border: none; font-size: 18px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 2px; flex-shrink: 0;
-        }
-
-        /* --- Settings Overlay --- */
-        .overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 200; padding: 30px;
-        }
-        .overlay.active { display: flex; }
-        .card { width: 100%; max-width: 340px; }
-        input { width: 100%; padding: 14px; background: #222; border: 1px solid #333; border-radius: 12px; color: #fff; margin: 10px 0; outline: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="logo" id="open-settings">NEO ⚙️</div>
-    <div class="model-tag" id="current-model">GPT-5.3</div>
-</header>
-
-<div id="chat-window">
-    <div class="bubble ai">Ready. Note: If requests fail, the API's CORS policy may be blocking your browser.</div>
-</div>
-
-<div class="input-box">
-    <div class="inner-input">
-        <textarea id="main-input" placeholder="Message..." rows="1"></textarea>
-        <button class="circle-btn" id="send-btn">↑</button>
+<div id="onboarding">
+    <div class="step active" id="step-name">
+        <h2 style="font-weight: 600;">Welcome.</h2>
+        <p style="color: var(--text-dim); font-size: 13px;">What should we call you?</p>
+        <input type="text" id="in-name" class="lux-input" placeholder="Your Name" autocomplete="off">
+        <button class="lux-btn" onclick="nextStep(2)">CONTINUE</button>
+    </div>
+    <div class="step" id="step-token">
+        <h2 style="font-weight: 600;">Secure Access.</h2>
+        <p style="color: var(--text-dim); font-size: 13px;">Enter your API token to begin.</p>
+        <input type="password" id="in-token" class="lux-input" placeholder="sk-..." autocomplete="off">
+        <button class="lux-btn" onclick="finishOnboarding()">UNLOCK NEO</button>
     </div>
 </div>
 
-<div class="overlay" id="settings-overlay">
-    <div class="card">
-        <h2>Settings</h2>
-        <p style="color: #666; font-size: 13px;">API Token</p>
-        <input type="password" id="token-field" placeholder="Paste Token...">
-        <button onclick="save()" style="width:100%; padding:14px; border-radius:12px; background:#fff; font-weight:bold; border:none;">Connect</button>
+<header>
+    <div class="welcome-text">WELCOME, <span id="display-name">USER</span> NEO CHAT</div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <select class="model-picker" id="model-select">
+            <option>Loading Models...</option>
+        </select>
+        <div class="menu-btn" style="cursor: pointer; font-size: 20px;" onclick="togglePanel(true)">☰</div>
+    </div>
+</header>
+
+<div id="side-panel">
+    <div class="panel-close" onclick="togglePanel(false)">×</div>
+    <h2 class="panel-title">Personality</h2>
+    <label>AI Behavior / Instructions</label>
+    <textarea id="sys-prompt" class="panel-input" rows="8" placeholder="e.g. You are a professional assistant who speaks with luxury and elegance..."></textarea>
+    <button class="lux-btn" style="width: 100%; margin-top: 20px;" onclick="savePersonality()">SAVE PREFERENCES</button>
+    <div style="margin-top: 40px; font-size: 10px; color: #444; text-align: center;">NEO PLATINUM v4.0</div>
+</div>
+
+<div id="chat-stream">
+    </div>
+
+<div class="input-container">
+    <div class="pill">
+        <textarea id="user-msg" placeholder="Write a message..." rows="1"></textarea>
+        <button class="send-icon" id="send-btn">↑</button>
     </div>
 </div>
 
 <script>
-    let TOKEN = localStorage.getItem('ai_token') || '';
-    const chatWindow = document.getElementById('chat-window');
-    const mainInput = document.getElementById('main-input');
-    const overlay = document.getElementById('settings-overlay');
+    let NAME = localStorage.getItem('neo_name');
+    let TOKEN = localStorage.getItem('neo_token');
+    let SYSTEM = localStorage.getItem('neo_personality') || "You are a helpful assistant.";
 
-    // --- Helpers ---
-    const save = () => {
-        TOKEN = document.getElementById('token-field').value.trim();
-        localStorage.setItem('ai_token', TOKEN);
-        overlay.classList.remove('active');
-    };
-
-    document.getElementById('open-settings').onclick = () => {
-        document.getElementById('token-field').value = TOKEN;
-        overlay.classList.add('active');
-    };
-
-    function log(msg, type = 'ai', isImg = false) {
-        const div = document.createElement('div');
-        div.className = `bubble ${type}`;
-        div.innerHTML = isImg ? `<img src="${msg}">` : msg;
-        chatWindow.appendChild(div);
-        chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
+    // --- Onboarding Logic ---
+    if (!NAME || !TOKEN) {
+        document.getElementById('onboarding').style.display = 'flex';
+    } else {
+        startApp();
     }
 
-    // --- API Call ---
-    
-async function talk() {
-    const text = mainInput.value.trim();
-    if(!text || !TOKEN) return;
+    function nextStep(step) {
+        if(step === 2 && !document.getElementById('in-name').value.trim()) return;
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById('step-token').classList.add('active');
+    }
 
-    log(text, 'user');
-    mainInput.value = '';
-
-    try {
-        const res = await fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                message: text,
-                model: "gpt_5_3",
-                token: TOKEN // Pass the token to our proxy
-            })
-        });
-
-        const data = await res.json();
-        log(data.response || data.message || "No response.");
+    function finishOnboarding() {
+        NAME = document.getElementById('in-name').value.trim();
+        TOKEN = document.getElementById('in-token').value.trim();
+        if(!NAME || !TOKEN) return;
         
-    } catch(e) {
-        log(`<span style="color:#ff4444;">Server Error: ${e.message}</span>`);
+        localStorage.setItem('neo_name', NAME);
+        localStorage.setItem('neo_token', TOKEN);
+        startApp();
     }
-}
 
-    // --- UI Fixes ---
-    document.getElementById('send-btn').onclick = talk;
+    function startApp() {
+        document.getElementById('onboarding').style.transform = 'translateY(-100%)';
+        document.getElementById('display-name').innerText = NAME.toUpperCase();
+        document.getElementById('sys-prompt').value = SYSTEM;
+        fetchModels();
+    }
 
-    mainInput.oninput = function() {
+    // --- Panel & Settings ---
+    function togglePanel(open) {
+        document.getElementById('side-panel').classList.toggle('open', open);
+    }
+
+    function savePersonality() {
+        SYSTEM = document.getElementById('sys-prompt').value;
+        localStorage.setItem('neo_personality', SYSTEM);
+        togglePanel(false);
+    }
+
+    // --- API & Chat ---
+    async function fetchModels() {
+        try {
+            const res = await fetch('https://bot.insta-acc-sec.workers.dev/api/models', {
+                headers: { 'Authorization': `Bearer ${TOKEN}` }
+            });
+            const data = await res.json();
+            const select = document.getElementById('model-select');
+            select.innerHTML = (data.models || ['gpt_5_3']).map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
+        } catch (e) {
+            document.getElementById('model-select').innerHTML = '<option>ERROR</option>';
+        }
+    }
+
+    function addMessage(text, role, isImg = false) {
+        const stream = document.getElementById('chat-stream');
+        const div = document.createElement('div');
+        div.className = `msg ${role}`;
+        div.innerHTML = isImg ? `<img src="${text}">` : text;
+        stream.appendChild(div);
+        stream.scrollTo({ top: stream.scrollHeight, behavior: 'smooth' });
+    }
+
+    async function handleSend() {
+        const input = document.getElementById('user-msg');
+        const text = input.value.trim();
+        if(!text) return;
+
+        addMessage(text, 'user');
+        input.value = '';
+        input.style.height = 'auto';
+
+        try {
+            const res = await fetch('/api/chat', { // Points to your Vercel Proxy
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: text,
+                    token: TOKEN,
+                    model: document.getElementById('model-select').value,
+                    systemPrompt: SYSTEM
+                })
+            });
+            const data = await res.json();
+            addMessage(data.response || data.message || "No response received.", 'ai');
+        } catch(e) {
+            addMessage("Request failed. Ensure your Vercel proxy is deployed.", 'ai');
+        }
+    }
+
+    // --- UI Listeners ---
+    document.getElementById('send-btn').onclick = handleSend;
+    document.getElementById('user-msg').oninput = function() {
         this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        this.style.height = this.scrollHeight + 'px';
     };
 
-    // Keep Top Bar fixed when keyboard opens
+    // Keyboard behavior fix for iOS
     if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', () => {
             document.body.style.height = window.visualViewport.height + 'px';
+            window.scrollTo(0,0);
         });
     }
-
-    if(!TOKEN) overlay.classList.add('active');
 </script>
 </body>
 </html>
